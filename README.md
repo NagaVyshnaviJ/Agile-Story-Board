@@ -74,7 +74,3 @@ Developed by **Vyshnavi**
 - ServiceNow Certified Application Developer (CAD)  
 
 ---
-
-
-1. Create sample stories (`To Do`, `In Progress`, `Done`).  
-2. Open the board:  
