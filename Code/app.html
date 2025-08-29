@@ -1,0 +1,28 @@
+<div class="agile-board">
+  <div class="agile-lane" ondragover="allowDrop(event)" ondrop="drop(event, '1')">
+    <h3>To Do</h3>
+    <div ng-repeat="story in c.data.stories" ng-if="story.state == '1'" 
+         class="agile-card" draggable="true" ondragstart="drag(event)" id="{{story.sys_id}}">
+      <div class="card-number">{{story.number}}</div>
+      <div class="card-desc">{{story.short_description}}</div>
+    </div>
+  </div>
+  
+  <div class="agile-lane" ondragover="allowDrop(event)" ondrop="drop(event, '2')">
+    <h3>In Progress</h3>
+    <div ng-repeat="story in c.data.stories" ng-if="story.state == '2'" 
+         class="agile-card" draggable="true" ondragstart="drag(event)" id="{{story.sys_id}}">
+      <div class="card-number">{{story.number}}</div>
+      <div class="card-desc">{{story.short_description}}</div>
+    </div>
+  </div>
+  
+  <div class="agile-lane" ondragover="allowDrop(event)" ondrop="drop(event, '3')">
+    <h3>Done</h3>
+    <div ng-repeat="story in c.data.stories" ng-if="story.state == '3'" 
+         class="agile-card" draggable="true" ondragstart="drag(event)" id="{{story.sys_id}}">
+      <div class="card-number">{{story.number}}</div>
+      <div class="card-desc">{{story.short_description}}</div>
+    </div>
+  </div>
+</div>
