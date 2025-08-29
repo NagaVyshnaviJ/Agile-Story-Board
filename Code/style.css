@@ -1,0 +1,40 @@
+.agile-board {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  background-color: #f4f6f7;
+  font-family: sans-serif;
+}
+
+.agile-lane {
+  width: 30%;
+  min-height: 500px;
+  background-color: #e3e8ea;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.agile-lane h3 {
+  text-align: center;
+  color: #34495e;
+}
+
+.agile-card {
+  background-color: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 10px;
+  cursor: grab;
+}
+
+.card-number {
+  font-weight: bold;
+  color: #2980b9;
+  margin-bottom: 5px;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: #2c3e50;
+}
