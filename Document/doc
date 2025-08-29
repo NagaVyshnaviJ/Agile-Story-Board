@@ -1,0 +1,286 @@
+Project Documentation: Visual Agile Story Board for ServiceNow
+1. Introduction
+This document provides a comprehensive, step-by-step guide to building a Visual Agile Story Board application within a ServiceNow instance. The project involves creating a custom data structure, developing a dynamic and interactive Service Portal interface, and implementing server-side logic for data manipulation. This project is an excellent portfolio piece to demonstrate core ServiceNow administration and application development skills.
+
+2. Phase 1: Project Setup
+This phase prepares the development environment by creating a dedicated container for all project updates and a scoped application for file organization.
+
+2.1 Create the Update Set
+Navigate to System Update Sets > Local Update Sets.
+
+Click New.
+
+Set the Name to Agile Board V1.
+
+Click Submit and Make Current.
+
+2.2 Create the Scoped Application
+Navigate to System Applications > Studio.
+
+Click Create Application.
+
+Select Create custom application.
+
+To ensure the scope name is unique, enter a unique name like My Agile Board or [Your Name] Agile Board.
+
+Click Create.
+
+When prompted to create roles, click Continue in Studio (Advanced) to skip this step.
+
+3. Phase 2: Data Model Configuration
+This phase involves creating the custom table that will store the user stories for the board. These steps are performed within Studio.
+
+3.1 Create the 'Story' Table
+In Studio, click the Create Application File button.
+
+Search for and select Table, then click Create.
+
+Set the Label to Story. The Name will auto-populate.
+
+3.2 Configure Table Columns & Controls
+In the Columns tab of your new table, add the following columns:
+
+Short description: Type String, Max length 150
+
+Points: Type Integer
+
+Assigned to: Type Reference, Reference to User
+
+State: Type Choice
+
+In the Controls tab, check the Auto-number box and provide a Prefix, such as STRY.
+
+Click Save.
+
+3.3 Configure State Choices
+After saving the table, find the State column you just created and click its name to open its dictionary entry.
+
+Scroll down to the Choices related list at the bottom.
+
+Click New and add the following three choices one by one:
+
+Label: To Do, Value: 1
+
+Label: In Progress, Value: 2
+
+Label: Done, Value: 3
+
+4. Phase 3: Service Portal User Interface
+This phase focuses on building the front-end components: the page that will host the application and the widget that contains the logic and visuals for the story board.
+
+4.1 Create the Portal Page
+In the main ServiceNow interface, navigate to Service Portal > Pages.
+
+Click New.
+
+Set the Title to Agile Story Board and the ID to agile_board.
+
+Click Submit.
+
+4.2 Create the Widget
+Navigate to Service Portal > Widgets.
+
+Click New.
+
+Set the Name to Agile Board and the ID to agile-board.
+
+Click Submit.
+
+4.3 Add Widget Code
+Open the new Agile Board widget and paste the following code into the corresponding sections.
+
+HTML:
+
+HTML
+
+<div class="agile-board">
+  <div class="agile-lane" ondragover="allowDrop(event)" ondrop="drop(event, '1')">
+    <h3>To Do</h3>
+    <div ng-repeat="story in c.data.stories" ng-if="story.state == '1'" 
+         class="agile-card" draggable="true" ondragstart="drag(event)" id="{{story.sys_id}}">
+      <div class="card-number">{{story.number}}</div>
+      <div class="card-desc">{{story.short_description}}</div>
+    </div>
+  </div>
+  
+  <div class="agile-lane" ondragover="allowDrop(event)" ondrop="drop(event, '2')">
+    <h3>In Progress</h3>
+    <div ng-repeat="story in c.data.stories" ng-if="story.state == '2'" 
+         class="agile-card" draggable="true" ondragstart="drag(event)" id="{{story.sys_id}}">
+      <div class="card-number">{{story.number}}</div>
+      <div class="card-desc">{{story.short_description}}</div>
+    </div>
+  </div>
+  
+  <div class="agile-lane" ondragover="allowDrop(event)" ondrop="drop(event, '3')">
+    <h3>Done</h3>
+    <div ng-repeat="story in c.data.stories" ng-if="story.state == '3'" 
+         class="agile-card" draggable="true" ondragstart="drag(event)" id="{{story.sys_id}}">
+      <div class="card-number">{{story.number}}</div>
+      <div class="card-desc">{{story.short_description}}</div>
+    </div>
+  </div>
+</div>
+CSS:
+
+CSS
+
+.agile-board {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  background-color: #f4f6f7;
+  font-family: sans-serif;
+}
+
+.agile-lane {
+  width: 30%;
+  min-height: 500px;
+  background-color: #e3e8ea;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.agile-lane h3 {
+  text-align: center;
+  color: #34495e;
+}
+
+.agile-card {
+  background-color: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 10px;
+  cursor: grab;
+}
+
+.card-number {
+  font-weight: bold;
+  color: #2980b9;
+  margin-bottom: 5px;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: #2c3e50;
+}
+Server Script:
+(Note: You must replace the placeholder table name with the actual name of your Story table from Phase 2).
+
+JavaScript
+
+(function() {
+  // IMPORTANT: Replace the placeholder below with your table's full name.
+  // Find it by navigating to System Definition > Tables and searching for your "Story" table.
+  var myTableName = 'x_12345_my_agile_board_story'; 
+
+  // Check if the client is sending an update action
+  if (input && input.action === 'update_story_state') {
+    // Action: Update a single story's state
+    var storyUpdateGR = new GlideRecord(myTableName);
+    if (storyUpdateGR.get(input.story_id)) {
+      storyUpdateGR.setValue('state', input.new_state);
+      storyUpdateGR.update();
+    }
+  } else {
+    // Action: Load all stories for display
+    data.stories = [];
+    var storyDisplayGR = new GlideRecord(myTableName);
+    storyDisplayGR.query();
+    
+    while(storyDisplayGR.next()){
+      var story = {};
+      story.sys_id = storyDisplayGR.getUniqueValue();
+      story.number = storyDisplayGR.getValue('number');
+      story.short_description = storyDisplayGR.getValue('short_description');
+      story.state = storyDisplayGR.getValue('state');
+      data.stories.push(story);
+    }
+  }
+
+})();
+Client Script:
+
+JavaScript
+
+api.controller=function($scope) {
+  /* widget controller */
+  var c = this;
+
+  // These functions need to be on the global scope to be called by HTML attributes
+  
+  window.drag = function(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+  }
+
+  window.allowDrop = function(ev) {
+    ev.preventDefault();
+  }
+
+  window.drop = function(ev, newState) {
+    ev.preventDefault();
+    var storyId = ev.dataTransfer.getData("text");
+    
+    c.server.get({
+      action: 'update_story_state',
+      story_id: storyId,
+      new_state: newState
+    }).then(function(response) {
+      location.reload(); 
+    });
+  }
+};
+4.4 Add Widget to the Page
+Navigate back to the agile_board page record (Service Portal > Pages).
+
+Click the Open in Designer related link.
+
+In the left panel, find the Layouts section and drag a Container onto the page.
+
+Next, find your Agile Board widget in the filter box and drag it inside the container you just added.
+
+5. Phase 4: Testing and Finalization
+This final phase involves populating the board with sample data, testing its functionality, and packaging the project for deployment.
+
+5.1 Create Sample Data
+In the Filter navigator, search for your application name (e.g., My Agile Board).
+
+Under your application menu, click the Stories module.
+
+Click New to create a new story. Set its State to To Do and provide a Short description.
+
+Click Submit. Create 2-3 sample stories.
+
+5.2 View and Test the Story Board
+Construct the URL for your portal page: https://<YOUR_INSTANCE_NAME>.service-now.com/sp?id=agile_board.
+
+Replace <YOUR_INSTANCE_NAME> with your PDI's name (e.g., dev12345).
+
+Open the URL in a new browser tab. Your story board should appear with the sample stories.
+
+Test the functionality by dragging a card from one column to another. The page should reload with the card in its new position.
+
+5.3 Complete and Export the Update Set
+Navigate to System Update Sets > Local Update Sets.
+
+Find and open your Agile Board V1 update set.
+
+Change its State from In progress to Complete.
+
+Click Save.
+
+Scroll to the bottom and click the Export to XML related link to download your completed project file.
+
+6. Appendix: Common Troubleshooting Guide
+Issue: Custom application or module does not appear in the Filter Navigator.
+
+Solution: The navigator menu is cached. Log out and log back in, or run cache.do from the Filter navigator to force a server cache flush.
+
+Issue: Widget or Table is not visible in a list view.
+
+Solution: This is an application scope issue. Click the Settings gear icon > Developer tab, and ensure the Application dropdown is set to your My Agile Board application.
+
+Issue: The portal page shows an invalid table name error.
+
+Solution: The Server Script is using the wrong table name. Navigate to System Definition > Tables, find the true, full name of your custom Story table (e.g., x_12345_my_agile_board_story), and update the myTableName variable in the widget's Server Script.
